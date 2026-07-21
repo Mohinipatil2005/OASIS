@@ -9,33 +9,19 @@ export const Menu = () => {
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [pizzas, setPizzas] = useState([]);
-  const [categories, setCategories] = useState(['All', 'Veg', 'Non-Veg', 'Sides', 'Desserts', 'Beverages']);
+  const [categories, setCategories] = useState(['Veg', 'Non-Veg', 'Sides', 'Beverages']);
   const [loading, setLoading] = useState(true);
 
   // Read URL search params for pagination/filters
   const page = parseInt(searchParams.get('page') || '1', 10);
   const search = searchParams.get('search') || '';
-  const category = searchParams.get('category') || '';
+  const category = searchParams.get('category') || 'Veg';
   const sort = searchParams.get('sort') || '-createdAt';
 
   const [searchInput, setSearchInput] = useState(search);
   const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch unique categories
-  useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        const res = await api.get('/pizzas/categories');
-        if (res.data.success) {
-          setCategories(['All', ...res.data.categories]);
-        }
-      } catch (err) {
-        console.warn('Failed to load menu categories', err.message);
-        setCategories(['All', 'Veg', 'Non-Veg', 'Sides', 'Desserts', 'Beverages']);
-      }
-    };
-    fetchCats();
-  }, []);
+  // categories are static ['Veg', 'Non-Veg']
 
   // Fetch pizzas based on parameters
   useEffect(() => {
@@ -74,11 +60,7 @@ export const Menu = () => {
   };
 
   const handleCategorySelect = (cat) => {
-    if (cat === 'All') {
-      searchParams.delete('category');
-    } else {
-      searchParams.set('category', cat);
-    }
+    searchParams.set('category', cat);
     searchParams.set('page', '1');
     setSearchParams(searchParams);
   };
@@ -141,7 +123,7 @@ export const Menu = () => {
       {/* Category Tabs */}
       <div className="flex overflow-x-auto space-x-2 pb-6 border-b border-slate-200/50 dark:border-slate-800/80 mb-8 scrollbar-thin scrollbar-thumb-rounded">
         {categories.map((cat, idx) => {
-          const isActive = (cat === 'All' && !category) || (cat === category);
+          const isActive = cat === category;
           return (
             <button
               key={idx}

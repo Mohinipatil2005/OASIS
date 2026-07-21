@@ -90,7 +90,7 @@ export const getPizzaById = async (req, res, next) => {
  * Admin ONLY: Create new Pizza product
  */
 export const createPizza = async (req, res, next) => {
-  const { name, description, price, category, isCustomizable, ingredients } = req.body;
+  const { name, description, price, category, isCustomizable, ingredients, isVeg } = req.body;
 
   try {
     if (!req.file) {
@@ -111,6 +111,7 @@ export const createPizza = async (req, res, next) => {
       description,
       price: parseFloat(price),
       category,
+      isVeg: isVeg === 'true' || isVeg === true,
       isCustomizable: isCustomizable === 'true' || isCustomizable === true,
       image: uploadResult.secure_url,
       ingredients: parsedIngredients
@@ -131,7 +132,7 @@ export const createPizza = async (req, res, next) => {
  */
 export const updatePizza = async (req, res, next) => {
   const { id } = req.params;
-  const { name, description, price, category, isCustomizable, ingredients, isAvailable } = req.body;
+  const { name, description, price, category, isCustomizable, ingredients, isAvailable, isVeg } = req.body;
 
   try {
     const pizza = await Pizza.findById(id);
@@ -145,6 +146,7 @@ export const updatePizza = async (req, res, next) => {
     if (category) pizza.category = category;
     if (isAvailable !== undefined) pizza.isAvailable = isAvailable === 'true' || isAvailable === true;
     if (isCustomizable !== undefined) pizza.isCustomizable = isCustomizable === 'true' || isCustomizable === true;
+    if (isVeg !== undefined) pizza.isVeg = isVeg === 'true' || isVeg === true;
 
     if (ingredients) {
       pizza.ingredients = typeof ingredients === 'string' ? JSON.parse(ingredients) : ingredients;

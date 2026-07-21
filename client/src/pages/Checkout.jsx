@@ -110,7 +110,7 @@ export const Checkout = () => {
             key: res.data.razorpayKeyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_your_key_id',
             amount: razorpayOrder.amount,
             currency: 'INR',
-            name: 'Antigravity Pizza Delivery',
+            name: 'PizzaGo Delivery',
             description: `Order #${order._id.toString().slice(-6).toUpperCase()}`,
             order_id: razorpayOrder.id,
             handler: async (response) => {

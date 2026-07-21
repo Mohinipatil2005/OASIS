@@ -1,3 +1,4 @@
+import dns from 'dns';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import User from '../models/User.js';
@@ -8,6 +9,13 @@ import Order from '../models/Order.js';
 import Payment from '../models/Payment.js';
 import Notification from '../models/Notification.js';
 import { checkLowStock } from '../cron/inventoryCron.js';
+
+// Set DNS servers in case of local network resolution issues with Atlas
+try {
+  dns.setServers(['8.8.8.8', '8.8.4.4']);
+} catch (e) {
+  console.warn('DNS servers could not be set:', e.message);
+}
 
 dotenv.config();
 

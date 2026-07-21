@@ -1,0 +1,21 @@
+# Ignore dependency directories
+node_modules/
+
+# Ignore production builds
+dist/
+build/
+
+# Ignore environment files (sensitive credentials)
+backend/.env
+client/.env
+client/.env.local
+client/.env.development.local
+client/.env.test.local
+client/.env.production.local
+
+# Ignore logs and temp files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.DS_Store
+Thumbs.db

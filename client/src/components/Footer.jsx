@@ -6,7 +6,7 @@ export const Footer = () => {
   return (
     <footer className="bg-slate-100 dark:bg-slate-900 border-t border-slate-200/50 dark:border-slate-800/50 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 sm:py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
           
           {/* Logo & About */}
           <div className="space-y-4">
@@ -56,23 +56,6 @@ export const Footer = () => {
                 <Link to="/refund-policy" className="text-slate-500 dark:text-slate-400 hover:text-brand transition-colors">Refund Policy</Link>
               </li>
             </ul>
-          </div>
-
-          {/* Contact Details */}
-          <div className="space-y-3.5 text-sm">
-            <h3 className="text-sm font-extrabold uppercase tracking-widest text-slate-800 dark:text-slate-100 mb-4">Get In Touch</h3>
-            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
-              <FiMapPin className="text-brand shrink-0" />
-              <span>123 Pizza Street, Foodie Heaven, Ind</span>
-            </div>
-            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
-              <FiPhone className="text-brand shrink-0" />
-              <span>+91 98765 43210</span>
-            </div>
-            <div className="flex items-center space-x-2 text-slate-500 dark:text-slate-400">
-              <FiMail className="text-brand shrink-0" />
-              <span>support@antigravitypizza.com</span>
-            </div>
           </div>
 
         </div>

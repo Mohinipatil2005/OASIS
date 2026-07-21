@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { FiArrowRight, FiTruck, FiAward, FiHeart, FiTrendingUp } from 'react-icons/fi';
+import { FiArrowRight, FiTruck, FiAward, FiHeart, FiTrendingUp, FiSearch, FiSliders, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
 import toast from 'react-hot-toast';
 import gsap from 'gsap';
 import api from '../services/api';
@@ -9,9 +9,16 @@ import PizzaCard from '../components/PizzaCard';
 
 export const Landing = () => {
   const [emailInput, setEmailInput] = useState('');
-  const [featuredPizzas, setFeaturedPizzas] = useState([]);
-  const [loadingPizzas, setLoadingPizzas] = useState(true);
-  const [activeTab, setActiveTab] = useState('All');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [pizzas, setPizzas] = useState([]);
+  const [categories, setCategories] = useState(['Veg', 'Non-Veg', 'Sides', 'Beverages']);
+  const [loading, setLoading] = useState(true);
+  const page = parseInt(searchParams.get('page') || '1', 10);
+  const search = searchParams.get('search') || '';
+  const category = searchParams.get('category') || 'Veg';
+  const sort = searchParams.get('sort') || '-createdAt';
+  const [searchInput, setSearchInput] = useState(search);
+  const [totalPages, setTotalPages] = useState(1);
 
   // GSAP Refs
   const heroRef = useRef(null);
@@ -19,39 +26,43 @@ export const Landing = () => {
   const heroPriceRef = useRef(null);
   const titleContainerRef = useRef(null);
 
-  // Hero Pizza Showcase Slides (4 Top Pizzas with dynamic background themes)
+  // Hero Pizza Showcase Slides (4 Top Pizzas with dynamic background themes and descriptions)
   const heroPizzas = [
     {
-      name: 'Double Cheese Margherita',
-      price: 239,
-      image: 'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?q=80&w=500&auto=format&fit=crop',
-      bgClass: 'from-emerald-500/10 via-slate-50 to-transparent dark:from-emerald-950/20 dark:to-transparent',
-      accentColor: 'text-emerald-500',
-      badgeBg: 'bg-emerald-500/10 text-emerald-500'
+      name: 'BBQ Chicken Pizza',
+      price: 399,
+      image: 'https://res.cloudinary.com/dhc4icfi6/image/upload/v1783802415/pizzas/sf8rmbupyqdxcugumf1f.jpg',
+      description: 'Tangy tomato sauce with tandoori marinated chicken breast and premium melted cheese.',
+      bgClass: 'from-orange-500/10 via-slate-50 to-transparent dark:from-orange-950/20 dark:to-transparent',
+      accentColor: 'text-brand',
+      badgeBg: 'bg-brand/10 text-brand'
     },
     {
-      name: 'Detroit Crispy Pepperoni',
-      price: 529,
-      image: 'https://images.unsplash.com/photo-1590947132387-155cc02f3212?q=80&w=500&auto=format&fit=crop',
+      name: 'Pepperoni Pizza',
+      price: 500,
+      image: 'https://res.cloudinary.com/dhc4icfi6/image/upload/v1783845355/pizzas/wbloapajalriwbif1zmk.webp',
+      description: 'Classic favorite loaded with premium crispy pepperoni slices and extra melted mozzarella.',
       bgClass: 'from-rose-500/10 via-slate-50 to-transparent dark:from-rose-950/20 dark:to-transparent',
       accentColor: 'text-rose-500',
       badgeBg: 'bg-rose-500/10 text-rose-500'
     },
     {
-      name: 'Farmhouse Fresh Veggie',
-      price: 299,
-      image: 'https://images.unsplash.com/photo-1571407970349-bc81e7e96d47?q=80&w=500&auto=format&fit=crop',
+      name: 'Farmhouse Pizza',
+      price: 150,
+      image: 'https://res.cloudinary.com/dhc4icfi6/image/upload/v1783803985/pizzas/q4bwcdjnvht5qg1sskj3.webp',
+      description: 'Loaded with crunchy capsicum, red onions, mushrooms, and sweet corn on hand-tossed base.',
       bgClass: 'from-amber-500/10 via-slate-50 to-transparent dark:from-amber-950/20 dark:to-transparent',
       accentColor: 'text-amber-500',
       badgeBg: 'bg-amber-500/10 text-amber-500'
     },
     {
-      name: 'Chicken Maxxx Feast',
-      price: 459,
-      image: 'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?q=80&w=500&auto=format&fit=crop',
-      bgClass: 'from-orange-500/10 via-slate-50 to-transparent dark:from-orange-950/20 dark:to-transparent',
-      accentColor: 'text-brand',
-      badgeBg: 'bg-brand/10 text-brand'
+      name: 'Paneer Pizza',
+      price: 200,
+      image: 'https://res.cloudinary.com/dhc4icfi6/image/upload/v1783802612/pizzas/xorlnzaohwabdwfrhmnd.jpg',
+      description: 'Spicy tandoori marinated paneer cubes layered with capsicum and hot green chilies.',
+      bgClass: 'from-emerald-500/10 via-slate-50 to-transparent dark:from-emerald-950/20 dark:to-transparent',
+      accentColor: 'text-emerald-500',
+      badgeBg: 'bg-emerald-500/10 text-emerald-500'
     }
   ];
 
@@ -73,25 +84,36 @@ export const Landing = () => {
     { name: 'Garlic Breads & Dips', image: 'https://images.unsplash.com/photo-1619535860434-ba1d8fa12536?q=80&w=200&auto=format&fit=crop', filter: 'Garlic Breads & Dips' }
   ];
 
-  // Fetch pizzas for the front-page menu
+  // Fetch pizzas based on parameters (search, sort, category, page)
   useEffect(() => {
     const fetchPizzas = async () => {
+      setLoading(true);
       try {
-        const res = await api.get('/pizzas', { params: { limit: 12 } });
+        const params = {
+          limit: 12,
+          page,
+          sort
+        };
+        if (search) params.search = search;
+        if (category && category !== 'All') params.category = category;
+
+        const res = await api.get('/pizzas', { params });
         if (res.data.success) {
-          setFeaturedPizzas(res.data.pizzas);
+          setPizzas(res.data.pizzas);
+          setTotalPages(res.data.pagination.pages);
         }
       } catch (err) {
-        console.warn('Failed to load menu pizzas for home page', err.message);
-        // Load fallback generated pizzas if API fails
+        console.error('Error fetching pizzas:', err.message);
         const { MOCK_PIZZAS } = await import('../utils/mockPizzas');
-        setFeaturedPizzas(MOCK_PIZZAS);
+        setPizzas(MOCK_PIZZAS);
+        setTotalPages(1);
       } finally {
-        setLoadingPizzas(false);
+        setLoading(false);
       }
     };
+
     fetchPizzas();
-  }, []);
+  }, [page, search, category, sort]);
 
   // GSAP 3D Mouse Parallax effect on Hero (Subtle and clean)
   useEffect(() => {
@@ -216,10 +238,29 @@ export const Landing = () => {
     { icon: <FiHeart className="w-8 h-8 text-rose-500" />, title: 'Handcrafted With Love', desc: 'Every pizza is individually tossed and prepared by top chefs.' }
   ];
 
-  const filteredPizzas = featuredPizzas.filter(pizza => {
-    if (activeTab === 'All') return true;
-    return pizza.category === activeTab;
-  });
+  const handleSearchSubmit = (e) => {
+    e.preventDefault();
+    searchParams.set('search', searchInput);
+    searchParams.set('page', '1'); // reset page
+    setSearchParams(searchParams);
+  };
+
+  const handleCategorySelect = (cat) => {
+    searchParams.set('category', cat);
+    searchParams.set('page', '1');
+    setSearchParams(searchParams);
+  };
+
+  const handleSortSelect = (e) => {
+    searchParams.set('sort', e.target.value);
+    setSearchParams(searchParams);
+  };
+
+  const handlePageChange = (newPage) => {
+    if (newPage < 1 || newPage > totalPages) return;
+    searchParams.set('page', newPage.toString());
+    setSearchParams(searchParams);
+  };
 
   const activeHeroPizza = heroPizzas[activeHeroIdx];
 
@@ -247,14 +288,14 @@ export const Landing = () => {
                 <FiTrendingUp />
                 <span>WELCOME TO PIZZA-HUT</span>
               </span>
-              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight">
-                Devour The <br className="hidden sm:inline" />
+              <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight leading-tight min-h-[140px] flex flex-col justify-center">
+                <span>Devour The</span>
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-orange">
-                  Extraordinary.
+                  {activeHeroPizza.name}
                 </span>
               </h1>
-              <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-sans max-w-xl mx-auto lg:mx-0">
-                Fresh, hot, customizable pizzas baked in traditional wood-fired ovens. Build your own pizza recipe from our rich inventory of toppings and crusts.
+              <p className="text-base sm:text-lg text-slate-500 dark:text-slate-400 font-sans max-w-xl mx-auto lg:mx-0 min-h-[56px] leading-relaxed">
+                {activeHeroPizza.description}
               </p>
               
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start space-y-4 sm:space-y-0 sm:space-x-4 pt-2">
@@ -326,61 +367,8 @@ export const Landing = () => {
         </div>
       </section>
 
-      {/* What are you craving for? Category Grid */}
-      <section className="py-12 bg-slate-50/50 dark:bg-slate-900/10 border-b border-slate-100 dark:border-slate-800/40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
-          <h2 className="text-xl sm:text-2xl font-black text-slate-850 dark:text-slate-100 mb-8 font-sans">
-            What are you craving for?
-          </h2>
-
-          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-y-8 gap-x-4">
-            {cravingCategories.map((item, idx) => (
-              <div 
-                key={idx}
-                onClick={() => {
-                  setActiveTab(item.filter);
-                  // Scroll to home-menu
-                  document.getElementById('home-menu')?.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className="group flex flex-col items-center cursor-pointer select-none text-center hover:scale-105 transition-transform"
-              >
-                
-                {/* Circle image container */}
-                <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-full overflow-hidden border-2 border-slate-200/60 dark:border-slate-800/80 group-hover:border-brand shadow-sm transition-all duration-300">
-                  <img src={item.image} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
-                  
-                  {/* Yellow NEW badge */}
-                  {item.isNew && (
-                    <span className="absolute top-0 left-1/2 -translate-x-1/2 bg-[#ffc107] text-[7px] font-black text-slate-900 px-2 py-0.5 rounded-b-md uppercase tracking-wider scale-95 shadow-sm">
-                      NEW
-                    </span>
-                  )}
-
-                  {/* Veg / Non-Veg Indicator Dot */}
-                  {item.indicator && (
-                    <div className="absolute bottom-1 right-1 bg-white dark:bg-slate-950 p-0.5 rounded-sm border border-slate-200 dark:border-slate-800">
-                      <div className={`w-2.5 h-2.5 rounded-full ${
-                        item.indicator === 'veg' ? 'bg-emerald-600' : 'bg-red-600'
-                      }`}></div>
-                    </div>
-                  )}
-
-                </div>
-
-                <span className="text-[11px] font-extrabold text-slate-700 dark:text-slate-300 mt-2.5 group-hover:text-brand transition-colors leading-tight max-w-[100px]">
-                  {item.name}
-                </span>
-
-              </div>
-            ))}
-          </div>
-
-        </div>
-      </section>
-
-      {/* Dynamic Pizzas Menu Section */}
-      <section id="home-menu" className="py-20 bg-white dark:bg-darkBg">
+      {/* Interactive Menu Catalog Section */}
+      <section id="home-menu" className="py-16 bg-white dark:bg-darkBg border-t border-slate-100 dark:border-slate-800/40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
           <div className="text-center max-w-2xl mx-auto mb-10">
@@ -390,55 +378,121 @@ export const Landing = () => {
             </p>
           </div>
 
-          {/* Category Tabs */}
-          <div className="flex flex-wrap justify-center gap-2 mb-10">
-            {['All', 'Meals Under 99', 'Paneer Maxxx', 'Chicken Maxxx', 'Big Big Pizza', 'Veg Pizza', 'Non-Veg Pizza', 'Pizza Mania', 'Crazy Deals', 'Sourdough Range', 'Party Combos', 'Chicken Feast', 'Garlic Breads & Dips'].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all select-none ${
-                  activeTab === tab 
-                    ? 'bg-brand text-white shadow-lg shadow-brand/20' 
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand'
-                }`}
+          {/* Top Header Filter controls */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+            
+            {/* Search */}
+            <form onSubmit={handleSearchSubmit} className="relative max-w-md w-full">
+              <input 
+                type="text" 
+                placeholder="Search pizza menu..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="w-full pl-11 pr-20 py-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700/80 focus:outline-none focus:border-brand font-sans text-sm"
+              />
+              <FiSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
+              <button 
+                type="submit" 
+                className="absolute right-2 top-1/2 -translate-y-1/2 bg-brand text-white text-xs font-bold px-4 py-2 rounded-xl"
               >
-                {tab}
+                Search
               </button>
-            ))}
+            </form>
+
+            {/* Sort & Quick Filter details */}
+            <div className="flex items-center space-x-3 shrink-0">
+              <div className="flex items-center space-x-1.5 text-xs text-slate-400 font-sans">
+                <FiSliders />
+                <span>Sort:</span>
+              </div>
+              <select 
+                value={sort}
+                onChange={handleSortSelect}
+                className="px-4 py-3 rounded-2xl bg-white dark:bg-slate-800 text-slate-800 dark:text-slate-100 border border-slate-200 dark:border-slate-700 focus:outline-none font-sans text-xs"
+              >
+                <option value="-createdAt">Newest Additions</option>
+                <option value="price_asc">Price: Low to High</option>
+                <option value="price_desc">Price: High to Low</option>
+                <option value="rating_desc">Top Customer Rated</option>
+              </select>
+            </div>
+
           </div>
 
-          {/* Pizza Grid */}
-          {loadingPizzas ? (
+          {/* Category Tabs */}
+          <div className="flex overflow-x-auto space-x-2 pb-6 border-b border-slate-200/50 dark:border-slate-800/80 mb-8 scrollbar-thin scrollbar-thumb-rounded">
+            {categories.map((cat, idx) => {
+              const isActive = cat === category;
+              return (
+                <button
+                  key={idx}
+                  onClick={() => handleCategorySelect(cat)}
+                  className={`px-6 py-2.5 rounded-full text-xs font-bold uppercase tracking-wider transition-all select-none shrink-0 ${
+                    isActive 
+                      ? 'bg-brand text-white shadow-lg shadow-brand/20' 
+                      : 'bg-white dark:bg-slate-800 text-slate-500 dark:text-slate-400 hover:text-brand'
+                  }`}
+                >
+                  {cat}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Pizzas Catalog Grid */}
+          {loading ? (
+            // Skeleton loader grid
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-              {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="rounded-3xl glass overflow-hidden border border-slate-200/50 dark:border-slate-800/80 shadow-md p-5 space-y-4 animate-pulse">
-                  <div className="w-full h-40 bg-slate-200 dark:bg-slate-800 rounded-full w-32 h-32 mx-auto"></div>
-                  <div className="w-2/3 h-5 bg-slate-200 dark:bg-slate-800 rounded-md mx-auto"></div>
-                  <div className="w-full h-10 bg-slate-200 dark:bg-slate-800 rounded-md"></div>
+              {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="rounded-3xl glass overflow-hidden border border-slate-200/50 dark:border-slate-800/80 shadow-md p-5 space-y-4">
+                  <div className="w-full h-40 rounded-2xl shimmer"></div>
+                  <div className="w-2/3 h-5 rounded-md shimmer"></div>
+                  <div className="w-full h-10 rounded-md shimmer"></div>
+                  <div className="flex justify-between items-center pt-2">
+                    <div className="w-16 h-6 rounded-md shimmer"></div>
+                    <div className="w-24 h-9 rounded-md shimmer"></div>
+                  </div>
                 </div>
               ))}
             </div>
-          ) : filteredPizzas.length === 0 ? (
-            <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/30 rounded-3xl">
-              <p className="text-sm text-slate-400">No pizzas available in this category.</p>
+          ) : pizzas.length === 0 ? (
+            // Empty State
+            <div className="text-center py-20 glass rounded-3xl border border-slate-200/50 dark:border-slate-700/50">
+              <span className="text-6xl select-none">🍕</span>
+              <h3 className="text-xl font-bold mt-4">No Pizza Found</h3>
+              <p className="text-sm text-slate-400 font-sans mt-1">We couldn't find any pizzas matching your criteria. Try adjusting filters.</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
-              {filteredPizzas.map((pizza) => (
-                <PizzaCard key={pizza._id} pizza={pizza} />
-              ))}
-            </div>
-          )}
+            // Catalog Grid
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-8">
+                {pizzas.map((pizza) => (
+                  <PizzaCard key={pizza._id} pizza={pizza} />
+                ))}
+              </div>
 
-          <div className="text-center mt-12">
-            <Link 
-              to="/menu"
-              className="inline-flex items-center space-x-2 border-2 border-brand text-brand hover:bg-brand hover:text-white font-extrabold px-8 py-3.5 rounded-full transition-all"
-            >
-              <span>View Full Catalog</span>
-              <FiArrowRight />
-            </Link>
-          </div>
+              {/* Pagination Controls */}
+              {totalPages > 1 && (
+                <div className="flex justify-center items-center space-x-4 mt-12 pt-6 border-t border-slate-100 dark:border-slate-800/80">
+                  <button 
+                    onClick={() => handlePageChange(page - 1)}
+                    disabled={page === 1}
+                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-850 hover:border-brand disabled:opacity-40 disabled:hover:border-slate-200 transition-colors"
+                  >
+                    <FiChevronLeft className="w-4 h-4" />
+                  </button>
+                  <span className="text-xs font-bold text-slate-500 dark:text-slate-400">Page {page} of {totalPages}</span>
+                  <button 
+                    onClick={() => handlePageChange(page + 1)}
+                    disabled={page === totalPages}
+                    className="p-2.5 rounded-xl border border-slate-200 dark:border-slate-850 hover:border-brand disabled:opacity-40 disabled:hover:border-slate-200 transition-colors"
+                  >
+                    <FiChevronRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+            </>
+          )}
 
         </div>
       </section>
@@ -536,58 +590,6 @@ export const Landing = () => {
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="py-16 bg-white dark:bg-darkBg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-12">
-            <h2 className="text-3xl font-extrabold">What Our Foodies Say</h2>
-            <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans">
-              Don't just take our word for it. Read the verified reviews of our pizza enthusiasts.
-            </p>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="p-6 rounded-2xl glass hover-card">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-slate-200 font-bold flex items-center justify-center text-slate-700">A</div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Aditya Roy</h4>
-                  <span className="text-[10px] text-slate-400 font-sans">Verified Customer</span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-sans italic leading-relaxed">
-                "The Cheese Burst crust is out of this world! It arrived piping hot within 25 minutes. Love their Custom Pizza Builder tool, it makes ordering very fun."
-              </p>
-            </div>
-            
-            <div className="p-6 rounded-2xl glass hover-card">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-slate-200 font-bold flex items-center justify-center text-slate-700">R</div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Riya Sharma</h4>
-                  <span className="text-[10px] text-slate-400 font-sans">Food Blogger</span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-sans italic leading-relaxed">
-                "As a vegan, finding good cheese options is hard. Pizza Hut has dedicated Vegan Mozzarella that melts beautifully. High quality toppings."
-              </p>
-            </div>
-
-            <div className="p-6 rounded-2xl glass hover-card">
-              <div className="flex items-center space-x-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-slate-200 font-bold flex items-center justify-center text-slate-700">K</div>
-                <div>
-                  <h4 className="font-bold text-sm text-slate-800 dark:text-slate-100">Karan Patel</h4>
-                  <span className="text-[10px] text-slate-400 font-sans">Regular Customer</span>
-                </div>
-              </div>
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-sans italic leading-relaxed">
-                "Their Pepperoni Feast is loaded. No stingy toppings here! Plus, their tracking page is updated in real time via sockets, which is amazing."
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Newsletter */}
       <section className="py-16 bg-slate-50 dark:bg-slate-900/50">

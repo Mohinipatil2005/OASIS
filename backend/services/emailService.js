@@ -5,7 +5,7 @@ const emailFrom = process.env.EMAIL_FROM || 'noreply@pizzadelivery.com';
 const sendMail = async (to, subject, html) => {
   try {
     const info = await transporter.sendMail({
-      from: `"Antigravity Pizza Platform" <${emailFrom}>`,
+      from: `"PizzaGo Platform" <${emailFrom}>`,
       to,
       subject,
       html
@@ -22,7 +22,7 @@ const sendMail = async (to, subject, html) => {
  * Sends a welcome email upon registration.
  */
 export const sendRegistrationEmail = async (email, name) => {
-  const subject = 'Welcome to Antigravity Pizza Platform!';
+  const subject = 'Welcome to PizzaGo Platform!';
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #ddd; border-radius: 10px;">
       <h2 style="color: #ff4757; text-align: center;">Welcome to the Family, ${name}!</h2>
@@ -30,7 +30,7 @@ export const sendRegistrationEmail = async (email, name) => {
       <p>We are excited to serve you the freshest, custom-crafted pizzas in town.</p>
       <p>Before ordering, please make sure your account is verified.</p>
       <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-      <p style="font-size: 12px; color: #888; text-align: center;">© 2026 Antigravity Pizza. All rights reserved.</p>
+      <p style="font-size: 12px; color: #888; text-align: center;">© 2026 PizzaGo. All rights reserved.</p>
     </div>
   `;
   return await sendMail(email, subject, html);
@@ -179,7 +179,7 @@ export const sendLowStockAlertEmail = async (email, lowStockItems) => {
 
       <p style="margin-top: 20px;">Please re-order stock immediately from the Admin Inventory Panel to avoid blocking custom pizza building or standard orders.</p>
       <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
-      <p style="font-size: 12px; color: #888; text-align: center;">Automated Cron System Audit - Antigravity Pizza Platform</p>
+      <p style="font-size: 12px; color: #888; text-align: center;">Automated Cron System Audit - PizzaGo Platform</p>
     </div>
   `;
   return await sendMail(email, subject, html);

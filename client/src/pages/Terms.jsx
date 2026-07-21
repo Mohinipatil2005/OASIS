@@ -8,7 +8,7 @@ export const Terms = () => {
       
       <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
         <p>
-          Welcome to the Antigravity Pizza Platform. By accessing or using our websites and services, you agree to comply with the terms and conditions described below.
+          Welcome to the PizzaGo Platform. By accessing or using our websites and services, you agree to comply with the terms and conditions described below.
         </p>
 
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 pt-2">1. Placing Orders</h2>

@@ -23,7 +23,7 @@ import Cart from './pages/Cart';
 import Checkout from './pages/Checkout';
 import PaymentSuccess from './pages/PaymentSuccess';
 import OrderHistory from './pages/OrderHistory';
-import Wishlist from './pages/Wishlist';
+
 import Profile from './pages/Profile';
 import Login from './pages/Login';
 import Register from './pages/Register';
@@ -92,11 +92,7 @@ export const App = () => {
                       <OrderHistory />
                     </PrivateRoute>
                   } />
-                  <Route path="wishlist" element={
-                    <PrivateRoute>
-                      <Wishlist />
-                    </PrivateRoute>
-                  } />
+
 
                   {/* Auth pages */}
                   <Route path="login" element={<Login />} />

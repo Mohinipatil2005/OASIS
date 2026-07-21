@@ -24,6 +24,7 @@ export const AdminProducts = () => {
   const [category, setCategory] = useState('Veg');
   const [isCustomizable, setIsCustomizable] = useState(true);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [isVeg, setIsVeg] = useState(true);
   const [recipeIngredients, setRecipeIngredients] = useState([]); // array of { ingredient: id, quantityRequired: num }
 
   // Temp selected ingredient to append to recipe
@@ -34,7 +35,7 @@ export const AdminProducts = () => {
     setLoading(true);
     try {
       const res = await api.get('/pizzas', {
-        params: { page, limit: 8, search, isAvailable: 'all' }
+        params: { page, limit: 1000, search, isAvailable: 'all' }
       });
       if (res.data.success) {
         setPizzas(res.data.pizzas);
@@ -122,6 +123,7 @@ export const AdminProducts = () => {
     formData.append('category', category);
     formData.append('isCustomizable', isCustomizable.toString());
     formData.append('isAvailable', isAvailable.toString());
+    formData.append('isVeg', isVeg.toString());
     
     // Package recipe ingredients as stringified JSON array
     const recipePayload = recipeIngredients.map(item => ({
@@ -171,6 +173,7 @@ export const AdminProducts = () => {
     setCategory(prod.category);
     setIsCustomizable(prod.isCustomizable);
     setIsAvailable(prod.isAvailable);
+    setIsVeg(prod.isVeg !== undefined ? prod.isVeg : true);
     setImagePreview(prod.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=300&auto=format&fit=crop');
 
     // Map ingredients populated from db
@@ -209,6 +212,7 @@ export const AdminProducts = () => {
     setCategory('Veg');
     setIsCustomizable(true);
     setIsAvailable(true);
+    setIsVeg(true);
     setRecipeIngredients([]);
   };
 
@@ -359,7 +363,7 @@ export const AdminProducts = () => {
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div className="space-y-1">
                   <label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest block">Category</label>
                   <select 
@@ -368,6 +372,8 @@ export const AdminProducts = () => {
                   >
                     <option value="Veg">Veg</option>
                     <option value="Non-Veg">Non-Veg</option>
+                    <option value="Sides">Sides</option>
+                    <option value="Beverages">Beverages</option>
                   </select>
                 </div>
 
@@ -387,6 +393,15 @@ export const AdminProducts = () => {
                     className="w-4 h-4 rounded text-brand focus:ring-brand"
                   />
                   <label htmlFor="isAvailable" className="text-xs font-bold text-slate-650 cursor-pointer">In-stock Available</label>
+                </div>
+
+                <div className="flex items-center space-x-2 pt-5 select-none">
+                  <input 
+                    type="checkbox" id="isVeg" checked={isVeg}
+                    onChange={(e) => setIsVeg(e.target.checked)}
+                    className="w-4 h-4 rounded text-brand focus:ring-brand"
+                  />
+                  <label htmlFor="isVeg" className="text-xs font-bold text-slate-650 cursor-pointer">Vegetarian Item</label>
                 </div>
               </div>
 

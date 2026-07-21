@@ -10,6 +10,7 @@ export const PizzaCard = ({ pizza }) => {
   const { addToCart } = useCart();
 
   const isWishlisted = user?.wishlist?.includes(pizza._id);
+  const displayIsVeg = pizza.isVeg !== undefined ? pizza.isVeg : (pizza.category !== 'Non-Veg');
 
   const handleWishlist = (e) => {
     e.preventDefault();
@@ -38,29 +39,22 @@ export const PizzaCard = ({ pizza }) => {
       className="group relative rounded-3xl glass overflow-hidden border border-slate-200/50 dark:border-slate-800/80 shadow-sm hover:shadow-lg dark:hover:shadow-black/35 hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
     >
       
-      {/* Wishlist Heart */}
-      <button 
-        onClick={handleWishlist}
-        className="absolute top-4 right-4 z-10 p-2 rounded-full bg-white/90 dark:bg-slate-900/90 text-slate-500 dark:text-slate-400 hover:text-brand transition-colors focus:outline-none shadow-sm"
-        aria-label="Save Favorite"
-      >
-        <FiHeart className={`w-3.5 h-3.5 ${isWishlisted ? 'fill-brand text-brand' : ''}`} />
-      </button>
 
-      {/* Pizza Image - Domino's Style Center Circle */}
-      <Link to={`/pizza/${pizza._id}`} className="block pt-6 pb-2 text-center relative">
-        <div className="w-36 h-36 mx-auto rounded-full overflow-hidden border-4 border-slate-50 dark:border-slate-800 shadow-md group-hover:scale-105 group-hover:rotate-12 transition-all duration-500 ease-out origin-center">
+
+      {/* Pizza Image - Full-Width Cover Style */}
+      <Link to={`/pizza/${pizza._id}`} className="block relative">
+        <div className="h-44 w-full overflow-hidden relative">
           <img 
             src={pizza.image || 'https://images.unsplash.com/photo-1513104890138-7c749659a591?q=80&w=300&auto=format&fit=crop'} 
             alt={pizza.name} 
-            className="w-full h-full object-cover" 
+            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500 ease-out" 
           />
+          <span className={`absolute top-4 left-4 z-10 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-md ${
+            displayIsVeg ? 'bg-emerald-500/80 text-emerald-100 border border-emerald-500/20' : 'bg-brand/80 text-white border border-brand/20'
+          }`}>
+            {displayIsVeg ? 'Veg' : 'Non-Veg'}
+          </span>
         </div>
-        <span className={`absolute top-4 left-4 text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider ${
-          pizza.category === 'Veg' ? 'bg-emerald-500/10 text-emerald-500 border border-emerald-500/20' : 'bg-brand/10 text-brand border border-brand/20'
-        }`}>
-          {pizza.category}
-        </span>
       </Link>
 
       {/* Details & Action Drawer */}

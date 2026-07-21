@@ -8,7 +8,7 @@ export const PrivacyPolicy = () => {
       
       <div className="space-y-4 text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
         <p>
-          At Antigravity Pizza Platform, we value the trust you place in us. This Privacy Policy describes how we collect, use, and process your personal credentials when you purchase pizzas or browse our website.
+          At PizzaGo Platform, we value the trust you place in us. This Privacy Policy describes how we collect, use, and process your personal credentials when you purchase pizzas or browse our website.
         </p>
         
         <h2 className="text-lg font-bold text-slate-800 dark:text-slate-200 pt-2">1. Information We Collect</h2>

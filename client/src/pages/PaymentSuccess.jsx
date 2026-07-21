@@ -66,7 +66,7 @@ export const PaymentSuccess = () => {
         {/* Invoice Header */}
         <div className="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-5">
           <div>
-            <span className="text-xl font-black text-slate-850 dark:text-slate-100">🍕 Antigravity Invoice</span>
+            <span className="text-xl font-black text-slate-850 dark:text-slate-100">🍕 PizzaGo Invoice</span>
             <p className="text-[10px] text-slate-400 dark:text-slate-500 font-sans mt-0.5">Order ID: #{order._id.toString().toUpperCase()}</p>
           </div>
           <div className="text-right">

@@ -81,12 +81,13 @@ export const Cart = () => {
               {/* Product Info */}
               <div className="flex items-center space-x-4 w-full sm:w-auto">
                 <div className="w-16 h-16 rounded-2xl overflow-hidden shrink-0 border border-slate-200 dark:border-slate-800">
-                  {item.isCustomized ? (
+                  {item.image ? (
+                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                  ) : item.isCustomized ? (
                     <div className="w-full h-full bg-brand-orange/10 flex items-center justify-center text-2xl select-none">
                       🍕
                     </div>
                   ) : (
-                    // In a production app, fetch the image from database. We can pass image url or show default.
                     <div className="w-full h-full bg-brand/10 flex items-center justify-center text-2xl select-none">
                       🍕
                     </div>

@@ -96,7 +96,7 @@ app.use('/api/notifications', notificationRoutes);
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Antigravity Pizza Delivery & Inventory API is running.',
+    message: 'PizzaGo Delivery & Inventory API is running.',
     timestamp: new Date()
   });
 });

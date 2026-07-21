@@ -11,6 +11,8 @@ export const BuildPizza = () => {
 
   const [activeStep, setActiveStep] = useState(1);
   const [size, setSize] = useState('Medium');
+  const [isGeneratingAI, setIsGeneratingAI] = useState(false);
+  const [aiStatus, setAiStatus] = useState('');
 
   // Custom Selection States
   const [base, setBase] = useState('Classic');
@@ -70,23 +72,68 @@ export const BuildPizza = () => {
   };
 
   const handleAddCustomToCart = () => {
-    const customItem = {
-      pizza: null, // null denotes custom pizza
-      name: 'Custom Pizza',
-      price: currentPrice,
-      quantity: 1,
-      size,
-      isCustomized: true,
-      customizationDetails: {
-        base,
-        sauce,
-        cheese,
-        veggies,
-        toppings
+    setIsGeneratingAI(true);
+    setAiStatus('AI: Analyzing selected ingredients...');
+
+    setTimeout(() => {
+      setAiStatus('AI: Generating custom name & recipe details...');
+    }, 900);
+
+    setTimeout(() => {
+      setAiStatus('AI: Creating customized image from prompt...');
+    }, 1800);
+
+    setTimeout(() => {
+      // Generate AI Name
+      const prefixes = ['Gourmet', 'Artisanal', 'Smoky', 'Rustic', 'Spicy', 'Chef\'s Special', 'Royal', 'Ultimate'];
+      const baseNames = {
+        'Classic': 'Hand-Tossed',
+        'Thin Crust': 'Thin Crust',
+        'Whole Wheat': 'Wheat Craft',
+        'Cheese Burst': 'Cheese Burst',
+        'Stuffed Crust': 'Stuffed Crust Deluxe'
+      };
+
+      const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+      const baseName = baseNames[base] || 'Signature';
+      
+      let ingredientFocus = '';
+      if (veggies.length > 0) {
+        ingredientFocus = veggies[0];
+      } else if (toppings.length > 0) {
+        ingredientFocus = toppings[0];
+      } else {
+        ingredientFocus = cheese;
       }
-    };
-    addToCart(customItem);
-    navigate('/cart');
+
+      const generatedName = `${prefix} ${ingredientFocus} ${baseName}`;
+
+      // Generate AI Image URL
+      const promptIngredients = [cheese, ...veggies, ...toppings].join(", ");
+      const prompt = `gourmet pizza topped with ${promptIngredients} on ${base} base, professional food photography, 8k resolution, photorealistic`;
+      const generatedImage = `https://image.pollinations.ai/p/${encodeURIComponent(prompt)}?width=500&height=500&nologo=true`;
+
+      const customItem = {
+        pizza: null, // null denotes custom pizza
+        name: generatedName,
+        price: currentPrice,
+        image: generatedImage,
+        quantity: 1,
+        size,
+        isCustomized: true,
+        customizationDetails: {
+          base,
+          sauce,
+          cheese,
+          veggies,
+          toppings
+        }
+      };
+
+      addToCart(customItem);
+      setIsGeneratingAI(false);
+      navigate('/cart');
+    }, 2800);
   };
 
   return (
@@ -377,6 +424,28 @@ export const BuildPizza = () => {
         </div>
 
       </div>
+
+      <AnimatePresence>
+        {isGeneratingAI && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/85 backdrop-blur-md text-white px-4"
+          >
+            <div className="relative flex flex-col items-center text-center space-y-6 max-w-sm">
+              <div className="w-24 h-24 rounded-full border-4 border-dashed border-brand animate-spin flex items-center justify-center">
+                <span className="text-4xl select-none animate-pulse">🍕</span>
+              </div>
+              
+              <div className="space-y-2">
+                <h3 className="text-lg font-black tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-orange uppercase">AI Customization Active</h3>
+                <p className="text-xs text-slate-400 font-sans h-6">{aiStatus}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

@@ -61,8 +61,7 @@ export const seedDatabase = async () => {
     await Admin.create({
       name: 'Super Admin',
       email: 'admin@pizza.com',
-      password: 'adminpassword', // Will be pre-save hashed
-      profileImage: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?q=80&w=200&auto=format&fit=crop'
+      password: 'adminpassword' // Will be pre-save hashed
     });
     console.log('[Seeder] Default Admin account created successfully! Credentials: admin@pizza.com / adminpassword');
 

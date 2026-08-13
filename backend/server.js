@@ -53,7 +53,10 @@ app.use(
         'https://pizza-hut-app.vercel.app'
       ].filter(Boolean);
       
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
+      const cleanedOrigins = allowedOrigins.map(o => o.endsWith('/') ? o.slice(0, -1) : o);
+      const cleanedOrigin = origin && origin.endsWith('/') ? origin.slice(0, -1) : origin;
+
+      if (!origin || cleanedOrigins.includes(cleanedOrigin) || cleanedOrigin.endsWith('.vercel.app')) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));

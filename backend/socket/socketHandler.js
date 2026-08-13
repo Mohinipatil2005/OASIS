@@ -9,7 +9,24 @@ let ioInstance = null;
 export const initSocket = (server) => {
   ioInstance = new Server(server, {
     cors: {
-      origin: process.env.FRONTEND_URL || 'http://localhost:5173',
+      origin: (origin, callback) => {
+        const allowedOrigins = [
+          'http://localhost:5173',
+          'http://127.0.0.1:5173',
+          process.env.FRONTEND_URL,
+          process.env.CLIENT_URL,
+          'https://pizza-hut-app.vercel.app'
+        ].filter(Boolean);
+        
+        const cleanedOrigins = allowedOrigins.map(o => o.endsWith('/') ? o.slice(0, -1) : o);
+        const cleanedOrigin = origin && origin.endsWith('/') ? origin.slice(0, -1) : origin;
+
+        if (!origin || cleanedOrigins.includes(cleanedOrigin) || cleanedOrigin.endsWith('.vercel.app')) {
+          callback(null, true);
+        } else {
+          callback(new Error('Not allowed by CORS'));
+        }
+      },
       methods: ['GET', 'POST'],
       credentials: true
     }

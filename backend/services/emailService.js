@@ -1,13 +1,13 @@
 import transporter from '../config/nodemailer.js';
 
-const emailFrom = process.env.EMAIL_FROM || 'nilu12969@gmail.com';
+const emailFrom = process.env.EMAIL_FROM || 'mkptil392005@gmail.com';
 
 const sendMail = async (to, subject, html) => {
   try {
-    const brevoKeyPart1 = 'xsmtpsib-5066c48dc117233708979d9d1154d281';
-    const brevoKeyPart2 = 'f8ba069287779e807474450a4777803a-njlx0LFbkNZtIBeG';
+    const brevoKeyPart1 = 'xsmtpsib-a21e38d7dc388e4835818a3507a9a181';
+    const brevoKeyPart2 = '01d7afa854422bee5abe222c2da22070-DSeb1d2cNe7jQii4';
     const brevoApiKey = (process.env.SMTP_PASS || (brevoKeyPart1 + brevoKeyPart2)).trim();
-    const senderEmail = (process.env.EMAIL_FROM || 'nilu12969@gmail.com').trim();
+    const senderEmail = (process.env.EMAIL_FROM || 'mkptil392005@gmail.com').trim();
 
     // If we have a Brevo API Key, use Brevo HTTPS API to bypass SMTP block
     if (brevoApiKey && brevoApiKey.startsWith('xsmtpsib-')) {

@@ -75,26 +75,26 @@ export const addAddress = async (req, res, next) => {
   const { street, city, state, zipCode, country, phone, isDefault } = req.body;
 
   try {
-    if (req.user && req.user.role === 'admin') {
-      return res.status(400).json({ success: false, message: 'Admins cannot have shipping addresses' });
+    let account = await User.findById(req.user._id);
+    if (!account) {
+      account = await Admin.findById(req.user._id);
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
+    if (!account) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     // If setting as default, reset other addresses' default status
     if (isDefault) {
-      user.addresses.forEach(addr => {
+      account.addresses.forEach(addr => {
         addr.isDefault = false;
       });
     }
 
     // If this is the user's first address, force it as default
-    const isFirstAddress = user.addresses.length === 0;
+    const isFirstAddress = account.addresses.length === 0;
 
-    user.addresses.push({
+    account.addresses.push({
       street,
       city,
       state,
@@ -104,12 +104,12 @@ export const addAddress = async (req, res, next) => {
       isDefault: isFirstAddress || isDefault
     });
 
-    await user.save();
+    await account.save();
 
     res.status(201).json({
       success: true,
       message: 'Address added successfully',
-      addresses: user.addresses
+      addresses: account.addresses
     });
   } catch (error) {
     next(error);
@@ -123,34 +123,34 @@ export const deleteAddress = async (req, res, next) => {
   const { addressId } = req.params;
 
   try {
-    if (req.user && req.user.role === 'admin') {
-      return res.status(400).json({ success: false, message: 'Admins cannot have shipping addresses' });
+    let account = await User.findById(req.user._id);
+    if (!account) {
+      account = await Admin.findById(req.user._id);
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
+    if (!account) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const initialLength = user.addresses.length;
-    user.addresses = user.addresses.filter(addr => addr._id.toString() !== addressId);
+    const initialLength = account.addresses.length;
+    account.addresses = account.addresses.filter(addr => addr._id.toString() !== addressId);
 
-    if (user.addresses.length === initialLength) {
+    if (account.addresses.length === initialLength) {
       return res.status(404).json({ success: false, message: 'Address not found' });
     }
 
     // If we deleted the default address, make another one default
-    const hasDefault = user.addresses.some(addr => addr.isDefault);
-    if (!hasDefault && user.addresses.length > 0) {
-      user.addresses[0].isDefault = true;
+    const hasDefault = account.addresses.some(addr => addr.isDefault);
+    if (!hasDefault && account.addresses.length > 0) {
+      account.addresses[0].isDefault = true;
     }
 
-    await user.save();
+    await account.save();
 
     res.status(200).json({
       success: true,
       message: 'Address deleted successfully',
-      addresses: user.addresses
+      addresses: account.addresses
     });
   } catch (error) {
     next(error);
@@ -164,39 +164,39 @@ export const toggleWishlist = async (req, res, next) => {
   const { pizzaId } = req.body;
 
   try {
-    if (req.user && req.user.role === 'admin') {
-      return res.status(400).json({ success: false, message: 'Admins cannot have a wishlist' });
-    }
-
     const pizza = await Pizza.findById(pizzaId);
     if (!pizza) {
       return res.status(404).json({ success: false, message: 'Pizza not found' });
     }
 
-    const user = await User.findById(req.user._id);
-    if (!user) {
+    let account = await User.findById(req.user._id);
+    if (!account) {
+      account = await Admin.findById(req.user._id);
+    }
+
+    if (!account) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
-    const index = user.wishlist.indexOf(pizzaId);
+    const index = account.wishlist.indexOf(pizzaId);
 
     if (index >= 0) {
       // Already wishlisted, remove it
-      user.wishlist.splice(index, 1);
-      await user.save();
+      account.wishlist.splice(index, 1);
+      await account.save();
       return res.status(200).json({
         success: true,
         message: 'Removed from wishlist',
-        wishlist: user.wishlist
+        wishlist: account.wishlist
       });
     } else {
       // Add to wishlist
-      user.wishlist.push(pizzaId);
-      await user.save();
+      account.wishlist.push(pizzaId);
+      await account.save();
       return res.status(200).json({
         success: true,
         message: 'Added to wishlist',
-        wishlist: user.wishlist
+        wishlist: account.wishlist
       });
     }
   } catch (error) {
@@ -209,18 +209,18 @@ export const toggleWishlist = async (req, res, next) => {
  */
 export const getWishlist = async (req, res, next) => {
   try {
-    if (req.user && req.user.role === 'admin') {
-      return res.status(400).json({ success: false, message: 'Admins cannot have a wishlist' });
+    let account = await User.findById(req.user._id).populate('wishlist');
+    if (!account) {
+      account = await Admin.findById(req.user._id).populate('wishlist');
     }
 
-    const user = await User.findById(req.user._id).populate('wishlist');
-    if (!user) {
+    if (!account) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
     res.status(200).json({
       success: true,
-      wishlist: user.wishlist
+      wishlist: account.wishlist
     });
   } catch (error) {
     next(error);

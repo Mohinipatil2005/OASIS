@@ -3,6 +3,7 @@ import Pizza from '../models/Pizza.js';
 import Inventory from '../models/Inventory.js';
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 import Notification from '../models/Notification.js';
 import { createRazorpayOrder, verifyRazorpaySignature } from '../services/paymentService.js';
 import { sendOrderConfirmationEmail } from '../services/emailService.js';
@@ -237,11 +238,23 @@ export const verifyPayment = async (req, res, next) => {
     await order.save({ validateBeforeSave: false });
 
     // 5. Send order confirmation email
-    sendOrderConfirmationEmail(order.user.email, order).catch(err => console.error('Order email failed:', err.message));
+    // 5. Send order confirmation email
+    let orderUser = order.user;
+    if (!orderUser) {
+      orderUser = await Admin.findById(req.user._id);
+    }
+
+    const userEmail = orderUser?.email || '';
+    const userId = orderUser?._id || req.user._id;
+    const userName = orderUser?.name || 'Customer';
+
+    if (userEmail) {
+      sendOrderConfirmationEmail(userEmail, order).catch(err => console.error('Order email failed:', err.message));
+    }
 
     // 6. Create User notifications
     const notification = await Notification.create({
-      user: order.user._id,
+      user: userId,
       title: 'Order Confirmed! 🍕',
       message: `Your order #${order._id.toString().slice(-6).toUpperCase()} has been received and is being sent to the kitchen.`,
       type: 'order'
@@ -256,7 +269,7 @@ export const verifyPayment = async (req, res, next) => {
     // Emit live alert to admin panel
     emitToAdmins('new_order', {
       orderId: order._id,
-      userName: order.user.name,
+      userName: userName,
       totalAmount: order.totalAmount,
       createdAt: order.createdAt
     });

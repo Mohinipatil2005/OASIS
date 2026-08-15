@@ -215,7 +215,7 @@ export const login = async (req, res, next) => {
         expiresAt: new Date(Date.now() + 10 * 60 * 1000)
       });
       logOTP(account.email, otpCode, 'verification');
-      await sendOTPEmail(account.email, otpCode);
+      sendOTPEmail(account.email, otpCode).catch(err => console.error('Login verify OTP email failed:', err.message));
 
       return res.status(403).json({
         success: false,

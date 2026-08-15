@@ -4,6 +4,38 @@ const emailFrom = process.env.EMAIL_FROM || 'noreply@pizzadelivery.com';
 
 const sendMail = async (to, subject, html) => {
   try {
+    // If we have a Brevo API Key (starts with xsmtpsib- or is configured), use Brevo HTTPS API to bypass SMTP block
+    if (process.env.SMTP_PASS && process.env.SMTP_PASS.startsWith('xsmtpsib-')) {
+      console.log(`Sending email to ${to} via Brevo HTTP API...`);
+      const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'api-key': process.env.SMTP_PASS.trim(),
+          'content-type': 'application/json'
+        },
+        body: JSON.stringify({
+          sender: {
+            name: 'PizzaGo Platform',
+            email: emailFrom
+          },
+          to: [{ email: to }],
+          subject,
+          htmlContent: html
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(`Brevo HTTP API Error: ${JSON.stringify(errorData)}`);
+      }
+      
+      const data = await response.json();
+      return data;
+    }
+
+    // Default Nodemailer Fallback
+    console.log(`Sending email to ${to} via SMTP...`);
     const info = await transporter.sendMail({
       from: `"PizzaGo Platform" <${emailFrom}>`,
       to,

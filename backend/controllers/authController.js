@@ -81,7 +81,7 @@ export const verifyOTP = async (req, res, next) => {
 
   try {
     // Development Bypass: allow 123456 to verify any account instantly
-    if (otp === '123456') {
+    if (otp === '123456' && (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV)) {
       if (otpType === 'verification') {
         const user = await User.findOne({ email });
         if (user) {
@@ -339,7 +339,7 @@ export const resetPassword = async (req, res, next) => {
 
   try {
     let isValid = false;
-    if (otp === '123456') {
+    if (otp === '123456' && (process.env.NODE_ENV === 'development' || !process.env.NODE_ENV)) {
       isValid = true;
     } else {
       const otpRecord = await OTP.findOne({ email, otpType: 'password_reset' });

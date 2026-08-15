@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import Admin from '../models/Admin.js';
 import Pizza from '../models/Pizza.js';
 import { uploadBufferToCloudinary } from '../services/cloudinaryService.js';
 
@@ -7,8 +8,16 @@ import { uploadBufferToCloudinary } from '../services/cloudinaryService.js';
  */
 export const getProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id).select('-password');
-    res.status(200).json({ success: true, user });
+    let profile = await User.findById(req.user._id).select('-password');
+    if (!profile) {
+      profile = await Admin.findById(req.user._id).select('-password');
+    }
+
+    if (!profile) {
+      return res.status(404).json({ success: false, message: 'Profile not found' });
+    }
+
+    res.status(200).json({ success: true, user: profile });
   } catch (error) {
     next(error);
   }
@@ -21,7 +30,13 @@ export const updateProfile = async (req, res, next) => {
   const { name } = req.body;
   
   try {
-    const user = await User.findById(req.user._id);
+    let user = await User.findById(req.user._id);
+    let isAdmin = false;
+    if (!user) {
+      user = await Admin.findById(req.user._id);
+      isAdmin = true;
+    }
+
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
@@ -43,7 +58,10 @@ export const updateProfile = async (req, res, next) => {
     res.status(200).json({
       success: true,
       message: 'Profile updated successfully',
-      user: updatedUser
+      user: {
+        ...updatedUser,
+        role: isAdmin ? 'admin' : user.role
+      }
     });
   } catch (error) {
     next(error);
@@ -57,6 +75,10 @@ export const addAddress = async (req, res, next) => {
   const { street, city, state, zipCode, country, phone, isDefault } = req.body;
 
   try {
+    if (req.user && req.user.role === 'admin') {
+      return res.status(400).json({ success: false, message: 'Admins cannot have shipping addresses' });
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -101,6 +123,10 @@ export const deleteAddress = async (req, res, next) => {
   const { addressId } = req.params;
 
   try {
+    if (req.user && req.user.role === 'admin') {
+      return res.status(400).json({ success: false, message: 'Admins cannot have shipping addresses' });
+    }
+
     const user = await User.findById(req.user._id);
     if (!user) {
       return res.status(404).json({ success: false, message: 'User not found' });
@@ -138,12 +164,20 @@ export const toggleWishlist = async (req, res, next) => {
   const { pizzaId } = req.body;
 
   try {
+    if (req.user && req.user.role === 'admin') {
+      return res.status(400).json({ success: false, message: 'Admins cannot have a wishlist' });
+    }
+
     const pizza = await Pizza.findById(pizzaId);
     if (!pizza) {
       return res.status(404).json({ success: false, message: 'Pizza not found' });
     }
 
     const user = await User.findById(req.user._id);
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     const index = user.wishlist.indexOf(pizzaId);
 
     if (index >= 0) {
@@ -175,7 +209,15 @@ export const toggleWishlist = async (req, res, next) => {
  */
 export const getWishlist = async (req, res, next) => {
   try {
+    if (req.user && req.user.role === 'admin') {
+      return res.status(400).json({ success: false, message: 'Admins cannot have a wishlist' });
+    }
+
     const user = await User.findById(req.user._id).populate('wishlist');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     res.status(200).json({
       success: true,
       wishlist: user.wishlist

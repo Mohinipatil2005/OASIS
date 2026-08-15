@@ -191,29 +191,40 @@ export const Landing = () => {
   const handleHeroPizzaChange = (idx) => {
     if (idx === activeHeroIdx) return;
 
-    // Out animation
-    gsap.to(pizzaRef.current, {
-      opacity: 0,
-      scale: 0.96,
-      duration: 0.25,
-      ease: 'power2.in',
-      onComplete: () => {
-        setActiveHeroIdx(idx);
-        // In animation
-        gsap.to(pizzaRef.current, {
-          opacity: 1,
-          scale: 1,
-          duration: 0.45,
-          ease: 'back.out(1.1)'
-        });
-      }
-    });
+    const pizza = pizzaRef.current;
+    const heroPrice = heroPriceRef.current;
+
+    if (pizza) {
+      // Out animation
+      gsap.to(pizza, {
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.25,
+        ease: 'power2.in',
+        onComplete: () => {
+          setActiveHeroIdx(idx);
+          // In animation
+          if (pizzaRef.current) {
+            gsap.to(pizzaRef.current, {
+              opacity: 1,
+              scale: 1,
+              duration: 0.45,
+              ease: 'back.out(1.1)'
+            });
+          }
+        }
+      });
+    } else {
+      setActiveHeroIdx(idx);
+    }
 
     // Pop the price tag
-    gsap.fromTo(heroPriceRef.current,
-      { opacity: 0, y: 10 },
-      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.15 }
-    );
+    if (heroPrice) {
+      gsap.fromTo(heroPrice,
+        { opacity: 0, y: 10 },
+        { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out', delay: 0.15 }
+      );
+    }
   };
 
   const handleSubscribe = (e) => {

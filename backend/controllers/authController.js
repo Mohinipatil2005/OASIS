@@ -59,10 +59,10 @@ export const register = async (req, res, next) => {
       expiresAt
     });
 
-    // Send Welcome and OTP Emails
+    // Send Welcome and OTP Emails (in the background)
     logOTP(email, otpCode, 'verification');
-    await sendRegistrationEmail(email, name);
-    await sendOTPEmail(email, otpCode);
+    sendRegistrationEmail(email, name).catch(err => console.error('Registration email failed:', err.message));
+    sendOTPEmail(email, otpCode).catch(err => console.error('OTP email failed:', err.message));
 
     res.status(201).json({
       success: true,
@@ -153,9 +153,9 @@ export const resendOTP = async (req, res, next) => {
 
     logOTP(email, otpCode, otpType);
     if (otpType === 'verification') {
-      await sendOTPEmail(email, otpCode);
+      sendOTPEmail(email, otpCode).catch(err => console.error('Resend OTP email failed:', err.message));
     } else if (otpType === 'password_reset') {
-      await sendForgotPasswordEmail(email, otpCode);
+      sendForgotPasswordEmail(email, otpCode).catch(err => console.error('Resend forgot password email failed:', err.message));
     }
 
     res.status(200).json({
@@ -320,7 +320,7 @@ export const forgotPassword = async (req, res, next) => {
     });
 
     logOTP(email, otpCode, 'password_reset');
-    await sendForgotPasswordEmail(email, otpCode);
+    sendForgotPasswordEmail(email, otpCode).catch(err => console.error('Forgot password email failed:', err.message));
 
     res.status(200).json({
       success: true,

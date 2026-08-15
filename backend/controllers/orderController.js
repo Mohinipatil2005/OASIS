@@ -237,7 +237,7 @@ export const verifyPayment = async (req, res, next) => {
     await order.save({ validateBeforeSave: false });
 
     // 5. Send order confirmation email
-    await sendOrderConfirmationEmail(order.user.email, order);
+    sendOrderConfirmationEmail(order.user.email, order).catch(err => console.error('Order email failed:', err.message));
 
     // 6. Create User notifications
     const notification = await Notification.create({

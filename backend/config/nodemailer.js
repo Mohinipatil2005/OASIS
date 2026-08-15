@@ -17,7 +17,9 @@ if (
     auth: {
       user: process.env.SMTP_USER.trim(),
       pass: process.env.SMTP_PASS.trim()
-    }
+    },
+    connectionTimeout: 5000,
+    socketTimeout: 5000
   });
 } else {
   // Fallback to jsonTransport which logs the emails to console, or creates a mock transporter

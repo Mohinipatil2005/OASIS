@@ -87,15 +87,7 @@ export const AdminLayout = () => {
 
         {/* Sidebar Footer */}
         <div className="pt-4 border-t border-slate-150 dark:border-slate-800 space-y-3 mt-6 sm:mt-0">
-          <div className="flex items-center justify-between text-xs text-slate-500 font-sans px-2">
-            <span>Theme:</span>
-            <button 
-              onClick={toggleTheme}
-              className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all text-slate-600 dark:text-slate-300"
-            >
-              {isDark ? <FiSun className="w-4 h-4" /> : <FiMoon className="w-4 h-4" />}
-            </button>
-          </div>
+
           <button
             onClick={handleLogout}
             className="w-full flex items-center space-x-2.5 px-4 py-2.5 text-xs text-left text-brand hover:bg-brand/5 rounded-xl transition-all"

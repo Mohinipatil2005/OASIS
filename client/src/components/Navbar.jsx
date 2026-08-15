@@ -105,14 +105,7 @@ export const Navbar = () => {
 
           {/* User Controls */}
           <div className="hidden md:flex items-center space-x-5">
-            {/* Theme Toggle */}
-            <button 
-              onClick={toggleTheme}
-              className="p-2.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800/80 transition-all text-slate-600 dark:text-slate-300 focus:outline-none"
-              aria-label="Toggle Theme"
-            >
-              {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-            </button>
+
 
 
 
@@ -272,10 +265,7 @@ export const Navbar = () => {
 
           {/* Mobile hamburger menu */}
           <div className="flex md:hidden items-center space-x-3">
-            {/* Theme Toggle Mobile */}
-            <button onClick={toggleTheme} className="p-2 text-slate-600 dark:text-slate-300">
-              {isDark ? <FiSun className="w-5 h-5" /> : <FiMoon className="w-5 h-5" />}
-            </button>
+
             
             {/* Shopping Cart Mobile */}
             <Link to="/cart" className="relative p-2 text-slate-600 dark:text-slate-300">
